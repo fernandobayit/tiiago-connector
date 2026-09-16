@@ -317,9 +317,9 @@ class FakeComputerUseBanner:
                 "the system permission portal will appear."
             )
         elif status == "Rearm Required":
-            self.message = "Computer use needs re-arming before Agent Zero can control your computer again."
+            self.message = "Computer use needs re-arming before TI•IA•GO can control your computer again."
         else:
-            self.message = "Agent Zero CLI can control your computer in this session."
+            self.message = "TI•IA•GO can control your computer in this session."
         self.display = True
 
 
@@ -1136,15 +1136,15 @@ async def test_cli_update_check_surfaces_available_release(
     await dummy_app._check_for_cli_update()
 
     message = (
-        f"a0 CLI update available: 99.0 (installed {__version__}). "
-        "Run `a0 update` after exiting to upgrade."
+        f"tiiago CLI update available: 99.0 (installed {__version__}). "
+        "Run `tiiago update` after exiting to upgrade."
     )
     assert notices == [(message, False)]
     assert notifications == [
         (
             message,
             {
-                "title": "a0 CLI update available",
+                "title": "tiiago CLI update available",
                 "severity": "information",
                 "timeout": 12,
                 "markup": False,

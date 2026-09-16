@@ -29,7 +29,7 @@ from agent_zero_cli.attachments import AttachmentRef, AttachmentUpload, remote_u
 _PLUGIN_API = "/api/plugins/_a0_connector/v1"
 _ACP_PLUGIN_API = "/api/plugins/_a0_acp"
 # Agent Zero's installer defaults to the first free port starting at 5080.
-DEFAULT_HOST = "http://localhost:5080"
+DEFAULT_HOST = "https://a0.bayit.me"
 PROTOCOL_VERSION = "a0-connector.v1"
 _SOCKET_IO_PATH = "/socket.io"
 WS_NAMESPACE = "/ws"

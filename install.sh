@@ -2,12 +2,12 @@
 
 set -eu
 
-LATEST_RELEASE_API_URL="${A0_LATEST_RELEASE_API_URL:-https://api.github.com/repos/agent0ai/a0-connector/releases/latest}"
+LATEST_RELEASE_API_URL="${A0_LATEST_RELEASE_API_URL:-https://api.github.com/repos/fernandobayit/tiiago-connector/releases/latest}"
 PYTHON_SPEC="${A0_PYTHON_SPEC:-3.12}"
 UV_INSTALL_URL="${UV_INSTALL_URL:-https://astral.sh/uv/install.sh}"
 RUNTIME_CONSTRAINTS_PATH="constraints/a0-runtime.txt"
 BUILD_CONSTRAINTS_PATH="constraints/a0-build.txt"
-RELEASE_RAW_FILE_URL_BASE="https://raw.githubusercontent.com/agent0ai/a0-connector/refs/tags"
+RELEASE_RAW_FILE_URL_BASE="https://raw.githubusercontent.com/fernandobayit/tiiago-connector/refs/tags"
 
 have_cmd() {
     command -v "$1" >/dev/null 2>&1
@@ -17,21 +17,21 @@ fetch_latest_release_tag() {
     if have_cmd curl; then
         response="$(curl -fsSL \
             -H "Accept: application/vnd.github+json" \
-            -H "User-Agent: a0-cli-installer" \
+            -H "User-Agent: tiiago-cli-installer" \
             "$LATEST_RELEASE_API_URL")" || {
-            echo "Could not resolve the latest a0 release from GitHub." >&2
+            echo "Could not resolve the latest tiiago release from GitHub." >&2
             exit 1
         }
     elif have_cmd wget; then
         response="$(wget -qO- \
             --header="Accept: application/vnd.github+json" \
-            --header="User-Agent: a0-cli-installer" \
+            --header="User-Agent: tiiago-cli-installer" \
             "$LATEST_RELEASE_API_URL")" || {
-            echo "Could not resolve the latest a0 release from GitHub." >&2
+            echo "Could not resolve the latest tiiago release from GitHub." >&2
             exit 1
         }
     else
-        echo "curl or wget is required to resolve the latest a0 release." >&2
+        echo "curl or wget is required to resolve the latest tiiago release." >&2
         exit 1
     fi
 
@@ -102,7 +102,7 @@ resolve_release_target() {
     fi
 
     RELEASE_TAG="$(fetch_latest_release_tag)"
-    PACKAGE_SPEC="a0 @ https://github.com/agent0ai/a0-connector/archive/refs/tags/$RELEASE_TAG.zip"
+    PACKAGE_SPEC="tiiago @ https://github.com/fernandobayit/tiiago-connector/archive/refs/tags/$RELEASE_TAG.zip"
 }
 
 resolve_constraints() {
@@ -167,7 +167,7 @@ EOF
 
 main() {
     ensure_uv
-    LOCK_TEMP_DIR="$(mktemp -d "${TMPDIR:-/tmp}/a0-install-locks.XXXXXX")"
+    LOCK_TEMP_DIR="$(mktemp -d "${TMPDIR:-/tmp}/tiiago-install-locks.XXXXXX")"
     trap 'rm -rf "$LOCK_TEMP_DIR"' EXIT INT TERM
 
     PACKAGE_SPEC=""
@@ -181,7 +181,7 @@ main() {
     export PATH="$uv_bin_dir:$PATH"
 
     uv tool update-shell >/dev/null 2>&1 || true
-    set -- uv tool install --force --python "$PYTHON_SPEC" --managed-python --upgrade-package a0
+    set -- uv tool install --force --python "$PYTHON_SPEC" --managed-python --upgrade-package tiiago
     if [ -n "$RUNTIME_CONSTRAINTS" ]; then
         set -- "$@" --constraints "$RUNTIME_CONSTRAINTS"
     fi
@@ -189,7 +189,7 @@ main() {
         set -- "$@" --build-constraints "$BUILD_CONSTRAINTS"
     fi
     if [ -z "$RUNTIME_CONSTRAINTS" ] || [ -z "$BUILD_CONSTRAINTS" ]; then
-        echo "Warning: installing a0 without dependency locks." >&2
+        echo "Warning: installing tiiago without dependency locks." >&2
     fi
     "$@" "$PACKAGE_SPEC"
 
@@ -197,15 +197,15 @@ main() {
 
     cat <<EOF
 
-a0 is installed.
+tiiago is installed.
 
 Run:
-  a0
+  tiiago
 
 Managed Python:
   $PYTHON_SPEC
 
-If 'a0' is not available in your current shell yet, open a new terminal.
+If 'tiiago' is not available in your current shell yet, open a new terminal.
 uv installs tool executables in:
   $uv_bin_dir
 EOF

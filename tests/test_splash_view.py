@@ -85,7 +85,7 @@ def test_empty_host_panel_mentions_agent_zero_install_url() -> None:
 
     message = panel._status_message()
 
-    assert "Install Agent Zero: http://agent-zero.ai" in message.plain
+    assert "TI•IA•GO runs on Agent Zero — install it from http://agent-zero.ai" in message.plain
 
 
 @pytest.mark.anyio

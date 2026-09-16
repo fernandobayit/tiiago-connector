@@ -71,7 +71,7 @@ def test_main_help_exits_without_launching_app(
 
     captured = capsys.readouterr()
     assert exc_info.value.code == 0
-    assert "usage: a0" in captured.out
+    assert "usage: tiiago" in captured.out
     assert "--host URL" in captured.out
     assert "--chat CONTEXT_ID" in captured.out
     assert "--chat-last" in captured.out
@@ -374,3 +374,57 @@ def test_run_app_installs_textual_input_decoder_guard(
     __main__._run_app()
 
     assert calls == ["guard", "renderer-init", "app-init", "app-run"]
+
+
+def test_brand_parser_prog_is_tiiago() -> None:
+    parser = __main__._build_parser()
+
+    assert parser.prog == "tiiago"
+
+
+def test_brand_tiiago_default_host_fallback(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    from agent_zero_cli import config as config_module
+
+    monkeypatch.setenv("TIIAGO_DEFAULT_HOST", "http://tiiago.example:5080")
+    monkeypatch.delenv("AGENT_ZERO_HOST", raising=False)
+    monkeypatch.setattr(config_module, "_ENV_FILE", tmp_path / "missing.env")
+
+    config = config_module.load_config()
+
+    assert config.instance_url == "http://tiiago.example:5080"
+
+
+def test_brand_agent_zero_host_wins_over_tiiago_default(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    from agent_zero_cli import config as config_module
+
+    monkeypatch.setenv("AGENT_ZERO_HOST", "http://primary.example:5080")
+    monkeypatch.setenv("TIIAGO_DEFAULT_HOST", "http://fallback.example:5080")
+    monkeypatch.setattr(config_module, "_ENV_FILE", tmp_path / "missing.env")
+
+    config = config_module.load_config()
+
+    assert config.instance_url == "http://primary.example:5080"
+
+
+def test_brand_autoconnect_flag(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    from agent_zero_cli import config as config_module
+
+    monkeypatch.setattr(config_module, "_ENV_FILE", tmp_path / "missing.env")
+
+    monkeypatch.setenv("TIIAGO_AUTOCONNECT", "1")
+    assert config_module.autoconnect_default_enabled() is True
+
+    monkeypatch.setenv("TIIAGO_AUTOCONNECT", "0")
+    assert config_module.autoconnect_default_enabled() is False
+
+    monkeypatch.delenv("TIIAGO_AUTOCONNECT")
+    assert config_module.autoconnect_default_enabled() is True

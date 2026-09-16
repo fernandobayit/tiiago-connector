@@ -15,8 +15,8 @@ from urllib.parse import quote, urlparse
 from urllib.request import Request, url2pathname, urlopen
 
 
-PACKAGE_NAME = "a0"
-GITHUB_REPOSITORY = "agent0ai/a0-connector"
+PACKAGE_NAME = "tiiago"
+GITHUB_REPOSITORY = "fernandobayit/tiiago-connector"
 LATEST_RELEASE_API_URL = f"https://api.github.com/repos/{GITHUB_REPOSITORY}/releases/latest"
 RELEASE_ARCHIVE_URL_TEMPLATE = (
     f"https://github.com/{GITHUB_REPOSITORY}/archive/refs/tags/{{tag}}.zip"
@@ -94,7 +94,7 @@ def fetch_latest_release_tag(
         api_url,
         headers={
             "Accept": "application/vnd.github+json",
-            "User-Agent": "a0-cli-self-update",
+            "User-Agent": "tiiago-cli-self-update",
         },
     )
     try:
@@ -222,17 +222,17 @@ def check_for_update(
 def format_update_available_message(result: UpdateCheckResult) -> str:
     if result.is_local_checkout:
         return (
-            f"a0 CLI update available: {result.latest_version} "
+            f"tiiago CLI update available: {result.latest_version} "
             f"(current checkout reports {result.current_version}). "
-            "Pull this checkout to update this runtime, or run `a0 update` for the standalone tool channel."
+            "Pull this checkout to update this runtime, or run `tiiago update` for the standalone tool channel."
         )
     return (
-        f"a0 CLI update available: {result.latest_version} "
-        f"(installed {result.current_version}). Run `a0 update` after exiting to upgrade."
+        f"tiiago CLI update available: {result.latest_version} "
+        f"(installed {result.current_version}). Run `tiiago update` after exiting to upgrade."
     )
 
 
-def detect_install_provenance(distribution_name: str = "a0") -> InstallProvenance:
+def detect_install_provenance(distribution_name: str = "tiiago") -> InstallProvenance:
     try:
         dist = metadata.distribution(distribution_name)
     except metadata.PackageNotFoundError:
@@ -272,13 +272,13 @@ def run_self_update_handoff(
 
     uv_executable = shutil.which("uv")
     if uv_executable is None:
-        print("uv is required for `a0 update`. Install uv or rerun the existing installer.")
+        print("uv is required for `tiiago update`. Install uv or rerun the existing installer.")
         return 1
 
     try:
         target = resolve_update_target(env)
     except LatestReleaseError as exc:
-        print(f"Failed to resolve a locked a0 update target: {exc}")
+        print(f"Failed to resolve a locked tiiago update target: {exc}")
         print(
             "Set A0_PACKAGE_SPEC with A0_RUNTIME_CONSTRAINTS and "
             "A0_BUILD_CONSTRAINTS for a custom locked package source."
@@ -463,14 +463,14 @@ def _build_updater_script() -> str:
 
             uv_executable = shutil.which("uv")
             if uv_executable is None:
-                print("uv is required for `a0 update`. Install uv or rerun the existing installer.")
+                print("uv is required for `tiiago update`. Install uv or rerun the existing installer.")
                 return 1
             supports_build_constraints = _uv_tool_install_supports(
                 uv_executable,
                 "--build-constraints",
             )
 
-            with tempfile.TemporaryDirectory(prefix="a0-update-locks-") as temp_dir:
+            with tempfile.TemporaryDirectory(prefix="tiiago-update-locks-") as temp_dir:
                 try:
                     runtime_lock = _prepare_constraint(
                         runtime_constraints,
@@ -495,7 +495,7 @@ def _build_updater_script() -> str:
                     python_spec,
                     "--managed-python",
                     "--upgrade-package",
-                    "a0",
+                    "tiiago",
                 ]
                 if runtime_lock:
                     command.extend(["--constraints", runtime_lock])
@@ -508,7 +508,7 @@ def _build_updater_script() -> str:
                             "--build-constraints; continuing with runtime constraints."
                         )
                 if not runtime_lock or not build_lock:
-                    print("Warning: running a0 update without dependency locks.")
+                    print("Warning: running tiiago update without dependency locks.")
                 command.append(package_spec)
 
                 try:

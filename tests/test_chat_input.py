@@ -41,7 +41,7 @@ async def test_chat_input_soft_wrapped_text_grows_to_four_rows() -> None:
         await pilot.pause()
 
         input_widget.value = (
-            "This is a long draft typed into the Agent Zero CLI composer to verify "
+            "This is a long draft typed into the TI•IA•GO composer to verify "
             "whether soft wrapped text makes the input box grow to three or four "
             "visible rows instead of staying constrained to a single line."
         )

@@ -1,0 +1,118 @@
+# Synchronize this fork with upstream agent0ai/a0-connector and re-apply the
+# TI•IA•GO brand layer. Daily 09:00 UTC (06:00 America/Sao_Paulo) + manual.
+# Upstream changes land on `main` as merge commits; the brand layer is then
+# re-applied and tests run. If tests fail, everything is rolled back to the
+# pre-merge state (the merge commit is dropped and the workflow fails red so
+# it gets attention). Uses the default GITHUB_TOKEN — no PAT setup needed.
+# The brand layer lives in devtools/apply_tiiago_brand.py and must never
+# rename shared protocol identifiers with Agent Zero Core — see AGENTS.md
+# "TI•IA•GO Brand Layer" for the protected identifier list.
+
+name: Sync upstream + rebrand
+
+on:
+  schedule:
+    - cron: "0 9 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-upstream
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout fork
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure git
+        run: |
+          git config user.name "TIIAGO Sync Bot"
+          git config user.email "fernando@bayit.me"
+
+      - name: Fetch upstream and detect changes
+        run: |
+          git remote add upstream https://github.com/agent0ai/a0-connector.git
+          git fetch upstream main
+          git checkout main
+          if [ "$(git rev-parse main)" = "$(git rev-parse upstream/main)" ]; then
+            echo "No upstream changes."
+            echo "HAS_CHANGES=false" >> "$GITHUB_ENV"
+          else
+            echo "HAS_CHANGES=true" >> "$GITHUB_ENV"
+          fi
+
+      - name: Merge upstream into main
+        if: env.HAS_CHANGES == 'true'
+        run: |
+          if ! git merge --no-edit upstream/main; then
+            echo "Merge conflicts — resolving with upstream side; the brand layer re-applies next."
+            git diff --name-only --diff-filter=U | xargs -r git checkout --theirs --
+            git add -A
+            git commit --no-edit
+          fi
+
+      - name: Set up uv and Python
+        if: env.HAS_CHANGES == 'true'
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.12"
+
+      - name: Apply TI•IA•GO brand layer
+        if: env.HAS_CHANGES == 'true'
+        run: |
+          python3 devtools/apply_tiiago_brand.py | tee brand_output.txt
+          {
+            echo "### TI•IA•GO brand layer"
+            echo '```'
+            cat brand_output.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Install package and run tests
+        if: env.HAS_CHANGES == 'true'
+        id: tests
+        run: |
+          uv venv .venv
+          uv pip install -e . pytest pytest-asyncio -p .venv/bin/python
+          set +e
+          ./.venv/bin/python -m pytest tests/ -q -x --ignore=tests/test_plugin_backend.py
+          code=$?
+          echo "exitcode=$code" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Push updated main
+        if: env.HAS_CHANGES == 'true' && steps.tests.outputs.exitcode == '0'
+        run: git push origin main
+
+      - name: Publish mirror release
+        if: env.HAS_CHANGES == 'true' && steps.tests.outputs.exitcode == '0'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION=$(grep -m1 '^version = ' pyproject.toml | sed 's/version = "\(.*\)"/\1/')
+          TAG="v$VERSION"
+          if ! git rev-parse -q --verify "refs/tags/$TAG" >/dev/null; then
+            git tag "$TAG"
+            git push origin "$TAG"
+          fi
+          # Forked repos inherit tags without release objects; installers
+          # resolve `releases/latest`, so ensure a release exists for the tag.
+          if ! gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release create "$TAG" --title "$TAG" --target main \
+              --notes "Mirror of upstream agent0ai/a0-connector $TAG with the TI•IA•GO brand layer applied."
+          fi
+
+      - name: Rollback when tests fail
+        if: env.HAS_CHANGES == 'true' && steps.tests.outputs.exitcode != '0'
+        run: |
+          git reset --hard ORIG_HEAD
+          echo "Tests failed after rebranding; merge rolled back. Upstream drift needs manual review." >> "$GITHUB_STEP_SUMMARY"
+          exit 1

@@ -34,8 +34,8 @@ def _message_for_status(
             "the system permission portal will appear."
         )
     if normalized == "rearm required":
-        return "Computer use needs re-arming before Agent Zero can control your computer again."
-    return "Agent Zero CLI can control your computer in this session."
+        return "Computer use needs re-arming before TI•IA•GO can control your computer again."
+    return "TI•IA•GO can control your computer in this session."
 
 
 class ComputerUseBanner(Static):

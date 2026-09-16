@@ -11,7 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 def test_package_keeps_python_floor_at_310() -> None:
     pyproject = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
     assert 'requires-python = ">=3.10"' in pyproject
-    assert '{ name = "agent0ai" }' in pyproject
+    assert '{ name = "TI•IA•GO" }' in pyproject
 
 
 def test_unix_installer_pins_managed_python() -> None:
@@ -29,7 +29,7 @@ def test_unix_installer_pins_managed_python() -> None:
     assert 'archive/refs/tags/$RELEASE_TAG.zip' in installer
     assert 'PYTHON_SPEC="${A0_PYTHON_SPEC:-3.12}"' in installer
     assert "--force" in installer
-    assert '--upgrade-package a0' in installer
+    assert '--upgrade-package tiiago' in installer
     assert "wl-clipboard" in installer
     assert "xclip" in installer
     assert '--constraints "$RUNTIME_CONSTRAINTS"' in installer
@@ -61,13 +61,13 @@ def test_windows_installer_pins_managed_python() -> None:
     assert "constraints/a0-runtime.txt" in installer
     assert "constraints/a0-build.txt" in installer
     assert '$PythonSpec = if ($env:A0_PYTHON_SPEC) { $env:A0_PYTHON_SPEC } else { "3.12" }' in installer
-    assert '$installArgs = @("tool", "install", "--force", "--python", $PythonSpec, "--managed-python", "--upgrade-package", "a0")' in installer
+    assert '$installArgs = @("tool", "install", "--force", "--python", $PythonSpec, "--managed-python", "--upgrade-package", "tiiago")' in installer
     assert '"--constraints", $runtimeConstraints' in installer
     assert '"--build-constraints", $buildConstraints' in installer
     assert "Ensure-UvToolInstallBuildConstraints" in installer
     assert "Test-UvToolInstallOption" in installer
     assert "Assert-NoRunningA0ToolProcesses" in installer
-    assert "Close all A0 CLI terminal windows" in installer
+    assert "Close all TIIAGO CLI terminal windows" in installer
     assert "does not support --build-constraints" in installer
     assert 'if ($LASTEXITCODE -ne 0)' in installer
 
@@ -155,15 +155,15 @@ def test_backend_packages_keep_release_names_and_modules() -> None:
 def test_readme_documents_uv_managed_python_and_git_install() -> None:
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
     compact = " ".join(readme.split())
-    assert "raw.githubusercontent.com/agent0ai/a0-connector/main/install.sh" in compact
-    assert "raw.githubusercontent.com/agent0ai/a0-connector/main/install.ps1" in compact
+    assert "raw.githubusercontent.com/fernandobayit/tiiago-connector/main/install.sh" in compact
+    assert "raw.githubusercontent.com/fernandobayit/tiiago-connector/main/install.ps1" in compact
     assert "resolve the latest published GitHub release at runtime" in compact
     assert "refs/tags/v1.6.zip" not in compact
-    assert "Computer-use backends are embedded in the `a0` wheel" in compact
+    assert "Computer-use backends are embedded in the `tiiago` wheel" in compact
     assert "managed CPython 3.12 tool environment" in compact
     assert "download the managed Python automatically" in compact
     assert "without requiring `git` to be installed" in readme
-    assert "`a0 update`" in readme
+    assert "`tiiago update`" in readme
     assert "resolves the latest published GitHub release at runtime" in compact
     assert "`A0_PACKAGE_SPEC`" in readme
     assert "`A0_PYTHON_SPEC`" in readme

@@ -1,11 +1,11 @@
 $ErrorActionPreference = "Stop"
 
-$LatestReleaseApiUrl = if ($env:A0_LATEST_RELEASE_API_URL) { $env:A0_LATEST_RELEASE_API_URL } else { "https://api.github.com/repos/agent0ai/a0-connector/releases/latest" }
+$LatestReleaseApiUrl = if ($env:A0_LATEST_RELEASE_API_URL) { $env:A0_LATEST_RELEASE_API_URL } else { "https://api.github.com/repos/fernandobayit/tiiago-connector/releases/latest" }
 $PythonSpec = if ($env:A0_PYTHON_SPEC) { $env:A0_PYTHON_SPEC } else { "3.12" }
 $UvInstallUrl = if ($env:UV_INSTALL_URL) { $env:UV_INSTALL_URL } else { "https://astral.sh/uv/install.ps1" }
 $RuntimeConstraintsPath = "constraints/a0-runtime.txt"
 $BuildConstraintsPath = "constraints/a0-build.txt"
-$ReleaseRawFileUrlBase = "https://raw.githubusercontent.com/agent0ai/a0-connector/refs/tags"
+$ReleaseRawFileUrlBase = "https://raw.githubusercontent.com/fernandobayit/tiiago-connector/refs/tags"
 
 function Resolve-PackageSpec {
     if ($env:A0_PACKAGE_SPEC) {
@@ -18,11 +18,11 @@ function Resolve-PackageSpec {
     try {
         $headers = @{
             Accept = "application/vnd.github+json"
-            "User-Agent" = "a0-cli-installer"
+            "User-Agent" = "tiiago-cli-installer"
         }
         $release = Invoke-RestMethod -Uri $LatestReleaseApiUrl -Headers $headers
     } catch {
-        throw "Could not resolve the latest a0 release from GitHub. Set A0_PACKAGE_SPEC to install from a specific package source. $($_.Exception.Message)"
+        throw "Could not resolve the latest tiiago release from GitHub. Set A0_PACKAGE_SPEC to install from a specific package source. $($_.Exception.Message)"
     }
 
     $tag = [string]$release.tag_name
@@ -32,7 +32,7 @@ function Resolve-PackageSpec {
 
     $escapedTag = [uri]::EscapeDataString($tag.Trim())
     return @{
-        PackageSpec = "a0 @ https://github.com/agent0ai/a0-connector/archive/refs/tags/$escapedTag.zip"
+        PackageSpec = "tiiago @ https://github.com/fernandobayit/tiiago-connector/archive/refs/tags/$escapedTag.zip"
         ReleaseTag = $tag.Trim()
     }
 }
@@ -173,7 +173,7 @@ function Assert-NoRunningA0ToolProcesses([string]$ToolDir) {
     $summary = ($running | ForEach-Object {
         "$($_.Name) pid=$($_.ProcessId)"
     }) -join ", "
-    throw "A0 CLI is still running from $toolRoot ($summary). Close all A0 CLI terminal windows, then rerun this installer."
+    throw "TIIAGO CLI is still running from $toolRoot ($summary). Close all TIIAGO CLI terminal windows, then rerun this installer."
 }
 
 Ensure-Uv
@@ -190,7 +190,7 @@ try {
 } catch {
 }
 
-$toolDir = Join-Path ((& uv tool dir).Trim()) "a0"
+$toolDir = Join-Path ((& uv tool dir).Trim()) "tiiago"
 Assert-NoRunningA0ToolProcesses $toolDir
 
 $lockTempDir = Join-Path ([IO.Path]::GetTempPath()) ("a0-install-locks-" + [guid]::NewGuid().ToString("N"))
@@ -200,7 +200,7 @@ try {
     $runtimeConstraints = Resolve-ConstraintFile $constraintSpecs.Runtime "a0-runtime.txt" $lockTempDir
     $buildConstraints = Resolve-ConstraintFile $constraintSpecs.Build "a0-build.txt" $lockTempDir
 
-    $installArgs = @("tool", "install", "--force", "--python", $PythonSpec, "--managed-python", "--upgrade-package", "a0")
+    $installArgs = @("tool", "install", "--force", "--python", $PythonSpec, "--managed-python", "--upgrade-package", "tiiago")
     if ($runtimeConstraints) {
         $installArgs += @("--constraints", $runtimeConstraints)
     }
@@ -212,7 +212,7 @@ try {
         }
     }
     if (-not $runtimeConstraints -or -not $buildConstraints) {
-        Write-Warning "Installing a0 without dependency locks."
+        Write-Warning "Installing tiiago without dependency locks."
     }
     $installArgs += $Target.PackageSpec
 
@@ -225,16 +225,16 @@ try {
 }
 
 Write-Host ""
-Write-Host "a0 is installed."
+Write-Host "tiiago is installed."
 Write-Host ""
 Write-Host "Run:"
-Write-Host "  a0"
+Write-Host "  tiiago"
 Write-Host ""
 Write-Host "Managed Python:"
 Write-Host "  $PythonSpec"
 Write-Host ""
 if ($toolBin) {
-    Write-Host "If 'a0' is not available in your current shell yet, open a new terminal."
+    Write-Host "If 'tiiago' is not available in your current shell yet, open a new terminal."
     Write-Host "uv installs tool executables in:"
     Write-Host "  $toolBin"
 }

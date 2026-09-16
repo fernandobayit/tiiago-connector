@@ -170,3 +170,10 @@
 - `devtools/AGENTS.md` - Browser preview, snapshots, and dependency lock tooling.
 - `requirements/AGENTS.md` - Human-edited dependency input files.
 - `constraints/AGENTS.md` - Generated release dependency lock files.
+
+## TI•IA•GO Brand Layer
+
+- This fork applies a mechanical brand layer on top of upstream: package/CLI name `tiiago` (alias `a0` kept), `TI•IA•GO` titles, URLs pointing at `fernandobayit/tiiago-connector`.
+- The layer lives in `devtools/apply_tiiago_brand.py` and is re-applied by `.github/workflows/sync-upstream.yml` after every upstream merge; run it manually with `python3 devtools/apply_tiiago_brand.py`.
+- Do NOT rename shared protocol identifiers: plugin `_a0_connector`, protocol `a0-connector.v1`, `/api/plugins/_a0_connector/v1/` routes, `A0_*`/`AGENT_ZERO_*` env vars, `constraints/a0-*.txt` paths, or the `agent_zero_cli` package. They are the contract with Agent Zero Core.
+- Fork-only additions: `DEFAULT_HOST` compiled to `https://a0.bayit.me` (client.py), `TIIAGO_DEFAULT_HOST` (host fallback override), and `TIIAGO_AUTOCONNECT` (auto-connect on startup, default ON; set `=0` to disable). Auto-connect lands on the login panel when no saved session exists.

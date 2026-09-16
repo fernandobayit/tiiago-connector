@@ -141,7 +141,7 @@ class AgentZeroCLI(App):
     """Agent Zero CLI - terminal-native connector shell."""
 
     CSS_PATH = "styles/app.tcss"
-    TITLE = "Agent Zero CLI"
+    TITLE = "TI•IA•GO"
     # Textual reports function keys as lowercase identifiers like `f3`.
     # Keep the canonical key names here and use `key_display` for the footer.
     BINDINGS = [
@@ -1603,7 +1603,7 @@ class AgentZeroCLI(App):
         try:
             self.notify(
                 message,
-                title="a0 CLI update available",
+                title="tiiago CLI update available",
                 severity="information",
                 timeout=12,
                 markup=False,

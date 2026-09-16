@@ -1,4 +1,4 @@
-# a0-connector
+# TI•IA•GO Connector
 
 Terminal connector for [Agent Zero](https://github.com/frdel/agent-zero). It pairs a Textual CLI with a small Agent Zero plugin so you can chat from the terminal, follow streaming events, and use the connector-specific remote editing/runtime features.
 
@@ -6,7 +6,7 @@ Terminal connector for [Agent Zero](https://github.com/frdel/agent-zero). It pai
 
 | Component | Location | Purpose |
 |-----------|----------|---------|
-| CLI (`a0`) | `src/agent_zero_cli/` | Textual UI, headless stdio mode, and session-aware transport client |
+| CLI (`tiiago`) | `src/agent_zero_cli/` | Textual UI, headless stdio mode, and session-aware transport client |
 | Plugin (`_a0_connector`) | Agent Zero Core `plugins/_a0_connector` | Builtin plugin that exposes the connector HTTP + Socket.IO surface |
 
 The CLI requires an Agent Zero build that includes the builtin `_a0_connector` plugin.
@@ -16,19 +16,19 @@ The CLI requires an Agent Zero build that includes the builtin `_a0_connector` p
 ### 1. Install on macOS / Linux
 
 ```bash
-curl -LsSf https://raw.githubusercontent.com/agent0ai/a0-connector/main/install.sh | sh
+curl -LsSf https://raw.githubusercontent.com/fernandobayit/tiiago-connector/main/install.sh | sh
 ```
 
 ### 2. Install on Windows PowerShell
 
 ```powershell
-irm https://raw.githubusercontent.com/agent0ai/a0-connector/main/install.ps1 | iex
+irm https://raw.githubusercontent.com/fernandobayit/tiiago-connector/main/install.ps1 | iex
 ```
 
 ### 3. Run
 
 ```bash
-a0
+tiiago
 ```
 
 Clipboard image paste works natively on macOS and Windows. Linux needs one
@@ -56,7 +56,7 @@ no images automatically. A direct iTerm session can advertise Sixel and use the
 native raster renderer. Verify a capable terminal separately before treating
 forced TGP or Sixel as accepted.
 
-Computer-use backends are embedded in the `a0` wheel, so the CLI and local computer-use support install and update together. Linux host computer use uses the Wayland portal backend; X11/Xpra control belongs to Agent Zero's internal Docker Desktop tooling rather than the remote host connector.
+Computer-use backends are embedded in the `tiiago` wheel, so the CLI and local computer-use support install and update together. Linux host computer use uses the Wayland portal backend; X11/Xpra control belongs to Agent Zero's internal Docker Desktop tooling rather than the remote host connector.
 
 ## Manual install
 
@@ -67,7 +67,7 @@ dependency locks committed to the same A0 release. `uv` can download the
 managed Python automatically without requiring `git` to be installed:
 
 ```bash
-curl -LsSf https://raw.githubusercontent.com/agent0ai/a0-connector/main/install.sh | sh
+curl -LsSf https://raw.githubusercontent.com/fernandobayit/tiiago-connector/main/install.sh | sh
 ```
 
 Set `A0_PYTHON_SPEC` if you need to override that interpreter request. If you
@@ -79,13 +79,13 @@ primary install path for this project.
 
 ## Update
 
-If you installed `a0` with the standard `uv tool` flow, update it in place with:
+If you installed `tiiago` with the standard `uv tool` flow, update it in place with:
 
 ```bash
-a0 update
+tiiago update
 ```
 
-By default `a0 update` resolves the latest published GitHub release at runtime,
+By default `tiiago update` resolves the latest published GitHub release at runtime,
 downloads that release's runtime and build constraints, and installs it into
 the managed CPython 3.12 tool runtime used by the installer. The updater
 upgrades A0 itself while keeping dependencies pinned to the tested release set.
@@ -93,7 +93,7 @@ For advanced cases you can override the interpreter request with
 `A0_PYTHON_SPEC`, or provide `A0_PACKAGE_SPEC` together with
 `A0_RUNTIME_CONSTRAINTS` and `A0_BUILD_CONSTRAINTS`.
 
-`a0 update` requires `uv` to be available on your `PATH`.
+`tiiago update` requires `uv` to be available on your `PATH`.
 
 ## Agent Zero Core
 
@@ -107,7 +107,7 @@ This repo does not contain a vendored plugin copy. For Core development, edit th
 ## Connect
 
 ```bash
-a0
+tiiago
 ```
 
 On every launch the CLI opens the host picker first. It checks Docker for local Agent Zero containers, lists any detected WebUI endpoints as friendly URLs such as `http://localhost:50001`, and lets you connect explicitly with Enter or the `Connect` button.
@@ -124,16 +124,16 @@ If you want to prefill a host, export it before starting the CLI:
 
 ```bash
 export AGENT_ZERO_HOST=http://localhost:50001
-a0
+tiiago
 ```
 
 Or pass it directly for a one-off launch:
 
 ```bash
-a0 --host http://localhost:5080
+tiiago --host http://localhost:5080
 ```
 
-Use `a0 --no-auto-connect` to keep the picker open even when Docker finds exactly one local instance. Use `a0 --no-docker-discovery` to skip Docker inspection and open manual URL entry immediately, which is useful for remote hosts, HTTPS tunnels such as Cloudflare, or machines without Docker.
+Use `tiiago --no-auto-connect` to keep the picker open even when Docker finds exactly one local instance. Use `tiiago --no-docker-discovery` to skip Docker inspection and open manual URL entry immediately, which is useful for remote hosts, HTTPS tunnels such as Cloudflare, or machines without Docker.
 
 You can optionally remember the chosen host from inside the app. Protected
 sessions may persist browser-style session cookies for that host so future CLI
@@ -142,20 +142,20 @@ tokens.
 
 ## Headless mode
 
-Use `a0 headless` when you need the connector without the full-screen Textual
+Use `tiiago headless` when you need the connector without the full-screen Textual
 interface. It streams events over stdout and keeps remote file, remote exec,
 and workspace-tree publishing active for the subscribed chat.
 
 ```bash
-a0 headless --host http://localhost:32080
-echo "what is 2+2" | a0 headless --host http://localhost:32080 --print --output jsonl
+tiiago headless --host http://localhost:32080
+echo "what is 2+2" | tiiago headless --host http://localhost:32080 --print --output jsonl
 ```
 
 Headless host resolution uses `--host`, then saved/env config, then Docker
 single-instance discovery. Protected instances reuse a persisted web session,
 `A0_USERNAME`/`A0_PASSWORD`, or TTY prompts; non-TTY auth failures exit with
-code `2`. Headless and `a0 gateway` remain text/JSONL-only: they neither import
-terminal-image rendering nor emit terminal image-protocol bytes. See [Headless mode](https://github.com/agent0ai/a0-connector/blob/main/docs/headless.md).
+code `2`. Headless and `tiiago gateway` remain text/JSONL-only: they neither import
+terminal-image rendering nor emit terminal image-protocol bytes. See [Headless mode](https://github.com/fernandobayit/tiiago-connector/blob/main/docs/headless.md).
 
 Active TUI and headless terminal sessions send one ready-for-input notification
 after each completed run. Set `A0_TERMINAL_NOTIFY=0` to disable it; headless
@@ -299,17 +299,23 @@ Platform caveats:
 ## Troubleshooting
 
 - `404` on `/api/plugins/_a0_connector/v1/capabilities`: the running Agent Zero build does not include the builtin `_a0_connector` plugin, or the local Core checkout/runtime copy is out of sync.
-- Browser UI works but `a0` does not: the core web UI can run without the connector plugin; the CLI cannot.
+- Browser UI works but `tiiago` does not: the core web UI can run without the connector plugin; the CLI cannot.
 - `Connector contract mismatch`: the server is advertising an older connector auth contract. Update Agent Zero Core so its builtin `_a0_connector` plugin matches the CLI.
 - WebSocket connection rejected: ensure proxies forward both `/socket.io` and `/api/plugins/` unchanged, and that `AGENT_ZERO_HOST` exactly matches the real host seen by Agent Zero. If Docker discovery shows `localhost`, prefer `localhost` over `127.0.0.1`.
-- `a0 update` says `uv` is required: Install `uv` or rerun the existing installer.
-- `a0` prints `No pyvenv.cfg file`: the uv tool environment is incomplete, often after an interrupted Windows self-update from an older release. Close any still-open A0 CLI terminal windows, then rerun the installer; the installer rebuilds the tool environment with `uv tool install --force`.
+- `tiiago update` says `uv` is required: Install `uv` or rerun the existing installer.
+- `tiiago` prints `No pyvenv.cfg file`: the uv tool environment is incomplete, often after an interrupted Windows self-update from an older release. Close any still-open A0 CLI terminal windows, then rerun the installer; the installer rebuilds the tool environment with `uv tool install --force`.
 - `A0_PACKAGE_SPEC requires A0_RUNTIME_CONSTRAINTS and A0_BUILD_CONSTRAINTS`: custom package updates must provide matching lock files, or explicitly set `A0_ALLOW_UNPINNED_UPDATE=1` for a development-only unlocked install.
 
 ## Docs
 
-- [Configuration](https://github.com/agent0ai/a0-connector/blob/main/docs/configuration.md)
-- [Architecture](https://github.com/agent0ai/a0-connector/blob/main/docs/architecture.md)
-- [Headless mode](https://github.com/agent0ai/a0-connector/blob/main/docs/headless.md)
-- [Development](https://github.com/agent0ai/a0-connector/blob/main/docs/development.md)
-- [TUI frontend](https://github.com/agent0ai/a0-connector/blob/main/docs/tui-frontend.md)
+- [Configuration](https://github.com/fernandobayit/tiiago-connector/blob/main/docs/configuration.md)
+- [Architecture](https://github.com/fernandobayit/tiiago-connector/blob/main/docs/architecture.md)
+- [Headless mode](https://github.com/fernandobayit/tiiago-connector/blob/main/docs/headless.md)
+- [Development](https://github.com/fernandobayit/tiiago-connector/blob/main/docs/development.md)
+- [TUI frontend](https://github.com/fernandobayit/tiiago-connector/blob/main/docs/tui-frontend.md)
+
+---
+
+## Upstream
+
+TI•IA•GO Connector is a branded fork of the upstream [`agent0ai/a0-connector`](https://github.com/agent0ai/a0-connector) project (MIT License). It tracks upstream releases automatically via a scheduled GitHub Action and re-applies the TI•IA•GO brand layer on top. The wire protocol shared with Agent Zero Core is unchanged.

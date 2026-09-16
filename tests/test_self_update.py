@@ -65,7 +65,7 @@ def test_resolve_package_spec_defaults_to_latest_release() -> None:
     )
 
     assert package_spec == (
-        "a0 @ https://github.com/agent0ai/a0-connector/archive/refs/tags/v9.8.zip"
+        "tiiago @ https://github.com/fernandobayit/tiiago-connector/archive/refs/tags/v9.8.zip"
     )
 
 
@@ -110,15 +110,15 @@ def test_resolve_update_target_defaults_to_release_locks() -> None:
 
     assert target == self_update.UpdateTarget(
         package_spec=(
-            "a0 @ https://github.com/agent0ai/a0-connector/archive/refs/tags/v9.8.zip"
+            "tiiago @ https://github.com/fernandobayit/tiiago-connector/archive/refs/tags/v9.8.zip"
         ),
         python_spec=self_update.DEFAULT_PYTHON_SPEC,
         runtime_constraints=(
-            "https://raw.githubusercontent.com/agent0ai/a0-connector/"
+            "https://raw.githubusercontent.com/fernandobayit/tiiago-connector/"
             "refs/tags/v9.8/constraints/a0-runtime.txt"
         ),
         build_constraints=(
-            "https://raw.githubusercontent.com/agent0ai/a0-connector/"
+            "https://raw.githubusercontent.com/fernandobayit/tiiago-connector/"
             "refs/tags/v9.8/constraints/a0-build.txt"
         ),
     )
@@ -225,7 +225,7 @@ def test_format_update_available_message_mentions_local_checkout() -> None:
 
     assert "current checkout reports 1.10" in message
     assert "Pull this checkout" in message
-    assert "`a0 update`" in message
+    assert "`tiiago update`" in message
 
 
 def test_detect_install_provenance_flags_local_editable_checkout(
@@ -289,7 +289,7 @@ def test_run_self_update_handoff_reports_latest_release_resolution_failure(
 
         captured = capsys.readouterr()
         assert exit_code == 1
-        assert "Failed to resolve a locked a0 update target: offline" in captured.out
+        assert "Failed to resolve a locked tiiago update target: offline" in captured.out
         assert "custom locked package source" in captured.out
         assert popen_calls == []
         assert list(temp_dir.iterdir()) == []
@@ -497,7 +497,7 @@ def test_generated_updater_script_waits_then_runs_uv_on_success(
                 "3.11",
                 "--managed-python",
                 "--upgrade-package",
-                "a0",
+                "tiiago",
                 "--constraints",
                 str(runtime_constraints),
                 "--build-constraints",

@@ -26,6 +26,8 @@ _HOST_BROWSER_RELAUNCH_PREFERENCE_KEY = "AGENT_ZERO_HOST_BROWSER_RELAUNCH_PREFER
 _DEFAULT_COMPUTER_USE_TRUST_MODE = "allow"
 _VALID_COMPUTER_USE_TRUST_MODES = {"persistent", "allow"}
 _VALID_HOST_BROWSER_RELAUNCH_PREFERENCES = {"ask", "manual"}
+_DEFAULT_HOST_KEY = "TIIAGO_DEFAULT_HOST"
+_AUTOCONNECT_KEY = "TIIAGO_AUTOCONNECT"
 
 
 @dataclass
@@ -365,11 +367,24 @@ def save_last_context(host: str, context_id: str) -> None:
     save_env(_LAST_CONTEXT_ID_KEY, normalized_context_id)
 
 
+def autoconnect_default_enabled() -> bool:
+    """Auto-connect the configured host on startup unless TIIAGO_AUTOCONNECT disables it."""
+    return _parse_bool(
+        os.environ.get(_AUTOCONNECT_KEY, _read_dotenv().get(_AUTOCONNECT_KEY, "")),
+        default=True,
+    )
+
+
 def load_config() -> CLIConfig:
     """Load config from environment variables, falling back to ~/.agent-zero/.env."""
     dotenv = _read_dotenv()
 
-    instance_url = os.environ.get("AGENT_ZERO_HOST") or dotenv.get("AGENT_ZERO_HOST", "")
+    instance_url = (
+        os.environ.get("AGENT_ZERO_HOST")
+        or os.environ.get(_DEFAULT_HOST_KEY)
+        or dotenv.get("AGENT_ZERO_HOST", "")
+        or dotenv.get(_DEFAULT_HOST_KEY, "")
+    )
     last_context_id = os.environ.get(_LAST_CONTEXT_ID_KEY) or dotenv.get(_LAST_CONTEXT_ID_KEY, "")
     last_context_host = os.environ.get(_LAST_CONTEXT_HOST_KEY) or dotenv.get(_LAST_CONTEXT_HOST_KEY, "")
     default_context_id = (

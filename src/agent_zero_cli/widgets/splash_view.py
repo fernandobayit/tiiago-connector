@@ -197,9 +197,9 @@ class SplashHostPanel(Vertical):
     def __init__(self) -> None:
         super().__init__(id="splash-host-panel")
         self._state = SplashState(stage="host")
-        self._title = Static("Local Agent Zero instances", classes="splash-panel-title")
+        self._title = Static("Local TI•IA•GO instances", classes="splash-panel-title")
         self._copy = Static(
-            "Detected Agent Zero WebUI endpoints. Manual URL entry is available below.",
+            "Detected TI•IA•GO WebUI endpoints. Manual URL entry is available below.",
             classes="splash-panel-copy",
         )
         self._host_valid = True
@@ -214,7 +214,7 @@ class SplashHostPanel(Vertical):
         self._manual_toggle = Button("Enter URL manually", id="splash-host-toggle-manual")
         self._manual_title = Static("Manual URL", classes="splash-panel-title", id="splash-manual-title")
         self._manual_copy = Static(
-            "Use this for remote Agent Zero hosts or anything Docker cannot see. Standard ports are optional.",
+            "Use this for remote TI•IA•GO hosts or anything Docker cannot see. Standard ports are optional.",
             classes="splash-panel-copy",
         )
         self._hint = Static(
@@ -290,13 +290,13 @@ class SplashHostPanel(Vertical):
         detail = self._state.discovery_detail.strip()
         count = len(self._state.discovered_instances)
         if status == "loading":
-            return Text("Checking Docker for local Agent Zero instances...", style="#9aa7b4")
+            return Text("Checking Docker for local TI•IA•GO instances...", style="#9aa7b4")
         if status == "ready":
             noun = "endpoint" if count == 1 else "endpoints"
             return Text(f"{count} Detected A0 {noun} ready to connect.", style="#79d18a")
         if status == "empty":
             message = detail or "No local Agent Zero Docker instances were found."
-            return Text(f"{message} Install Agent Zero: http://agent-zero.ai", style="#9aa7b4")
+            return Text(f"{message} TI•IA•GO runs on Agent Zero — install it from http://agent-zero.ai", style="#9aa7b4")
         if status == "unavailable":
             return Text(detail or "Docker is unavailable. Enter a URL manually.", style="#f0b54d")
         return Text(detail or "Docker discovery failed. Enter a URL manually.", style="#ff8b6b")
@@ -398,7 +398,7 @@ class SplashLoginPanel(Vertical):
         self._login_error = ""
         self._title = Static("Ready to login", classes="splash-panel-title")
         self._copy = Static(
-            "Sign in to the Agent Zero instance below.",
+            "Sign in to the TI•IA•GO instance below.",
             classes="splash-panel-copy",
         )
         self._target_summary = Static("", id="splash-login-target-summary")
@@ -486,9 +486,9 @@ class SplashLoginPanel(Vertical):
             )
 
         copy_text = (
-            "Use the same username and password you use in the Agent Zero Web UI."
+            "Use the same username and password you use in the TI•IA•GO Web UI."
             if self._target_detected_label
-            else "Login with the Agent Zero endpoint below."
+            else "Login with the TI•IA•GO endpoint below."
         )
         self._safe_update(self._copy, copy_text)
         self._safe_update(self._target_summary, summary)
