@@ -42,11 +42,13 @@ jobs:
           git remote add upstream https://github.com/agent0ai/a0-connector.git
           git fetch upstream main
           git checkout main
-          if [ "$(git rev-parse main)" = "$(git rev-parse upstream/main)" ]; then
+          NEW_COMMITS=$(git rev-list --count main..upstream/main)
+          echo "upstream commits not in main: $NEW_COMMITS"
+          if [ "$NEW_COMMITS" -gt 0 ]; then
+            echo "HAS_CHANGES=true" >> "$GITHUB_ENV"
+          else
             echo "No upstream changes."
             echo "HAS_CHANGES=false" >> "$GITHUB_ENV"
-          else
-            echo "HAS_CHANGES=true" >> "$GITHUB_ENV"
           fi
 
       - name: Merge upstream into main
@@ -59,11 +61,9 @@ jobs:
             git commit --no-edit
           fi
 
-      - name: Set up uv and Python
+      - name: Set up uv
         if: env.HAS_CHANGES == 'true'
         uses: astral-sh/setup-uv@v5
-        with:
-          python-version: "3.12"
 
       - name: Apply TI•IA•GO brand layer
         if: env.HAS_CHANGES == 'true'
@@ -80,7 +80,7 @@ jobs:
         if: env.HAS_CHANGES == 'true'
         id: tests
         run: |
-          uv venv .venv
+          uv venv .venv --python 3.12
           uv pip install -e . pytest pytest-asyncio -p .venv/bin/python
           set +e
           ./.venv/bin/python -m pytest tests/ -q -x --ignore=tests/test_plugin_backend.py
