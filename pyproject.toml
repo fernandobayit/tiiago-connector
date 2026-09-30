@@ -11,16 +11,16 @@ requires = [
 build-backend = "hatchling.build"
 
 [project]
-name = "a0"
+name = "tiiago"
 version = "2.13"
-description = "Terminal chat interface for Agent Zero"
+description = "TI•IA•GO — Terminal chat interface for Agent Zero"
 readme = "README.md"
 license = { file = "LICENSE" }
 requires-python = ">=3.10"
 authors = [
-    { name = "agent0ai" },
+    { name = "TI•IA•GO" },
 ]
-keywords = ["agent-zero", "a0", "cli", "textual", "tui"]
+keywords = ["agent-zero", "a0", "tiiago", "cli", "textual", "tui"]
 classifiers = [
     "Environment :: Console",
     "Intended Audience :: Developers",
@@ -93,11 +93,12 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/agent0ai/a0-connector"
-Repository = "https://github.com/agent0ai/a0-connector"
-Issues = "https://github.com/agent0ai/a0-connector/issues"
+Homepage = "https://github.com/fernandobayit/tiiago-connector"
+Repository = "https://github.com/fernandobayit/tiiago-connector"
+Issues = "https://github.com/fernandobayit/tiiago-connector/issues"
 
 [project.scripts]
+tiiago = "agent_zero_cli.__main__:main"
 a0 = "agent_zero_cli.__main__:main"
 
 [project.entry-points."a0.computer_use_backends"]
