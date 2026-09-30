@@ -7,7 +7,8 @@
 | `AGENT_ZERO_HOST` | Agent Zero base URL | `http://localhost:5080` |
 | `AGENT_ZERO_REMEMBER_HOST` | Persist the splash “Remember this host” preference for the saved host | disabled |
 | `AGENT_ZERO_DEFAULT_CONTEXT_ID` / `A0_DEFAULT_CHAT` | Chat context to open after connecting | Last remembered chat for the host, then a new chat |
-| `AGENT_ZERO_REMOTE_EXEC_ENABLED` / `A0_REMOTE_EXEC` | Start with host-side remote execution enabled | disabled |
+| `AGENT_ZERO_REMOTE_EXEC_ENABLED` / `A0_REMOTE_EXEC` | Start with host-side remote execution enabled | enabled |
+| `AGENT_ZERO_COMPUTER_USE_ENABLED` | Start with local Computer Use enabled (mode `allow`) | enabled |
 | `A0_CLI_IMAGE_MODE` | Interactive terminal image renderer: `auto`, `tgp`, `sixel`, `halfcell`, or `off` | `auto` |
 | `A0_TERMINAL_NOTIFY` | Terminal-native notification when an active run becomes ready for input. Set to `0`, `false`, `no`, or `off` to disable. | enabled for terminal output |
 | `A0_UPDATE_CHECK` | Startup check for a newer CLI release. Set to `0`, `false`, `no`, or `off` to disable. | enabled |

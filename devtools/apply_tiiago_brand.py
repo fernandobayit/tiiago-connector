@@ -223,6 +223,53 @@ PATCHES: list[tuple[str, str, str, int | None]] = [
         ),
         1,
     ),
+    # --- config.py: fork defaults keep remote exec + computer use enabled ------
+    (
+        "src/agent_zero_cli/config.py",
+        (
+            "    remote_exec_enabled: bool = False\n"
+            "    remember_host: bool = False\n"
+            "    computer_use_enabled: bool = False"
+        ),
+        (
+            "    remote_exec_enabled: bool = True\n"
+            "    remember_host: bool = False\n"
+            "    computer_use_enabled: bool = True"
+        ),
+        1,
+    ),
+    (
+        "src/agent_zero_cli/config.py",
+        'dotenv.get(_A0_REMOTE_EXEC_KEY, "0"),\n                ),\n            ),\n        ),\n        default=False,',
+        'dotenv.get(_A0_REMOTE_EXEC_KEY, "1"),\n                ),\n            ),\n        ),\n        default=True,',
+        1,
+    ),
+    (
+        "src/agent_zero_cli/config.py",
+        '_COMPUTER_USE_ENABLED_KEY, dotenv.get(_COMPUTER_USE_ENABLED_KEY, "0")),\n        default=False,',
+        '_COMPUTER_USE_ENABLED_KEY, dotenv.get(_COMPUTER_USE_ENABLED_KEY, "1")),\n        default=True,',
+        1,
+    ),
+    # --- computer_use.py: startup shutdown must not rewrite persisted state ----
+    (
+        "src/agent_zero_cli/computer_use.py",
+        'if self._persist_enabled:\n            save_computer_use_enabled(False)\n        self._set_status("disabled", error="")',
+        '# Shutdown must not rewrite persisted state: a toggle-written value stays\n'
+        '        # authoritative, an untouched install keeps the shipped defaults for the\n'
+        '        # next run, and explicit opt-outs remain authoritative.\n'
+        '        self._set_status("disabled", error="")',
+        1,
+    ),
+    # --- docs/configuration.md: default column for the toggles ------------------
+    (
+        "docs/configuration.md",
+        "| `AGENT_ZERO_REMOTE_EXEC_ENABLED` / `A0_REMOTE_EXEC` | Start with host-side remote execution enabled | disabled |",
+        (
+            "| `AGENT_ZERO_REMOTE_EXEC_ENABLED` / `A0_REMOTE_EXEC` | Start with host-side remote execution enabled | enabled |\n"
+            "| `AGENT_ZERO_COMPUTER_USE_ENABLED` | Start with local Computer Use enabled (mode `allow`) | enabled |"
+        ),
+        1,
+    ),
     # --- app.py: TUI identity --------------------------------------------------
     (
         "src/agent_zero_cli/app.py",

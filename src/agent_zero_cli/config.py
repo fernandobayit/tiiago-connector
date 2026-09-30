@@ -36,9 +36,9 @@ class CLIConfig:
     last_context_id: str = ""
     last_context_host: str = ""
     default_context_id: str = ""
-    remote_exec_enabled: bool = False
+    remote_exec_enabled: bool = True
     remember_host: bool = False
-    computer_use_enabled: bool = False
+    computer_use_enabled: bool = True
     computer_use_trust_mode: str = _DEFAULT_COMPUTER_USE_TRUST_MODE
     computer_use_restore_token: str = ""
     host_browser_enabled: bool = False
@@ -401,19 +401,19 @@ def load_config() -> CLIConfig:
                 _A0_REMOTE_EXEC_KEY,
                 dotenv.get(
                     _REMOTE_EXEC_ENABLED_KEY,
-                    dotenv.get(_A0_REMOTE_EXEC_KEY, "0"),
+                    dotenv.get(_A0_REMOTE_EXEC_KEY, "1"),
                 ),
             ),
         ),
-        default=False,
+        default=True,
     )
     remember_host = _parse_bool(
         os.environ.get(_REMEMBER_HOST_KEY, dotenv.get(_REMEMBER_HOST_KEY, "0")),
         default=False,
     )
     computer_use_enabled = _parse_bool(
-        os.environ.get(_COMPUTER_USE_ENABLED_KEY, dotenv.get(_COMPUTER_USE_ENABLED_KEY, "0")),
-        default=False,
+        os.environ.get(_COMPUTER_USE_ENABLED_KEY, dotenv.get(_COMPUTER_USE_ENABLED_KEY, "1")),
+        default=True,
     )
     computer_use_trust_mode = normalize_computer_use_trust_mode(
         os.environ.get(_COMPUTER_USE_TRUST_MODE_KEY, dotenv.get(_COMPUTER_USE_TRUST_MODE_KEY, ""))

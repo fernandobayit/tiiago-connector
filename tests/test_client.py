@@ -490,6 +490,29 @@ def test_load_config_prefers_environment_over_dotenv(
     assert config.remote_exec_enabled is True
 
 
+def test_load_config_defaults_enable_remote_exec_and_computer_use(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    import agent_zero_cli.config as config_mod
+    from agent_zero_cli.config import load_config
+
+    monkeypatch.setattr(config_mod, "_ENV_FILE", tmp_path / "missing.env")
+    for key in (
+        "AGENT_ZERO_REMOTE_EXEC_ENABLED",
+        "A0_REMOTE_EXEC",
+        "AGENT_ZERO_COMPUTER_USE_ENABLED",
+        "AGENT_ZERO_COMPUTER_USE_TRUST_MODE",
+    ):
+        monkeypatch.delenv(key, raising=False)
+
+    config = load_config()
+
+    assert config.remote_exec_enabled is True
+    assert config.computer_use_enabled is True
+    assert config.computer_use_trust_mode == "allow"
+
+
 def test_load_config_reads_default_chat_and_remote_exec_from_dotenv(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,

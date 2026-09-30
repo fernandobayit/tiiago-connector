@@ -788,7 +788,35 @@ def test_reset_enabled_for_shutdown_disables_next_run_without_erasing_restore_to
     assert manager.restore_token == restore_token
     assert manager.config.computer_use_restore_token == restore_token
     assert manager.status_label == "disabled"
-    assert "AGENT_ZERO_COMPUTER_USE_ENABLED=0" in _temp_env.read_text(encoding="utf-8")
+    if _temp_env.exists():
+        env_contents = _temp_env.read_text(encoding="utf-8")
+        assert "AGENT_ZERO_COMPUTER_USE_ENABLED=" not in env_contents
+
+
+def test_shutdown_keeps_toggle_written_enablement_persisted(
+    _temp_env: Path,
+) -> None:
+    manager = _manager(enabled=True, trust_mode="persistent")
+    manager.set_enabled(True)
+    assert "AGENT_ZERO_COMPUTER_USE_ENABLED=1" in _temp_env.read_text(encoding="utf-8")
+
+    manager.reset_enabled_for_shutdown()
+
+    assert manager.enabled is False
+    env_contents = _temp_env.read_text(encoding="utf-8")
+    assert "AGENT_ZERO_COMPUTER_USE_ENABLED=1" in env_contents
+
+
+def test_shutdown_rewrites_nothing_when_enablement_untouched(
+    _temp_env: Path,
+) -> None:
+    manager = _manager(enabled=True, trust_mode="persistent")
+
+    manager.reset_enabled_for_shutdown()
+
+    if _temp_env.exists():
+        env_contents = _temp_env.read_text(encoding="utf-8")
+        assert "AGENT_ZERO_COMPUTER_USE_ENABLED=" not in env_contents
 
 
 async def test_start_session_persists_restore_token_in_persistent_mode(

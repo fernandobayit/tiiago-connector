@@ -538,8 +538,9 @@ class ComputerUseManager:
     def reset_enabled_for_shutdown(self) -> None:
         self.enabled = False
         self.config.computer_use_enabled = False
-        if self._persist_enabled:
-            save_computer_use_enabled(False)
+        # Shutdown must not rewrite persisted state: a toggle-written value stays
+        # authoritative, an untouched install keeps the shipped defaults for the
+        # next run, and explicit opt-outs remain authoritative.
         self._set_status("disabled", error="")
 
     def set_trust_mode(self, mode: str) -> str:

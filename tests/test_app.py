@@ -1079,13 +1079,13 @@ def test_get_binding_description_reflects_remote_safety_toggle_state(
     exec_binding = bindings["toggle_remote_exec"]
 
     assert dummy_app.get_binding_description(file_binding) == "Read&Write"
-    assert dummy_app.get_binding_description(exec_binding) == "Code-exec OFF"
+    assert dummy_app.get_binding_description(exec_binding) == "Code-exec ON"
 
     dummy_app._set_remote_file_write_enabled(False)
-    dummy_app._set_remote_exec_enabled(True)
+    dummy_app._set_remote_exec_enabled(False)
 
     assert dummy_app.get_binding_description(file_binding) == "Read-only"
-    assert dummy_app.get_binding_description(exec_binding) == "Code-exec ON"
+    assert dummy_app.get_binding_description(exec_binding) == "Code-exec OFF"
 
 
 def test_pause_binding_description_switches_to_resume_when_latched(
@@ -4658,16 +4658,16 @@ async def test_remote_safety_toggles_update_local_permissions(
     dummy_app: DummyAgentZeroCLI,
 ) -> None:
     assert dummy_app._remote_files.allow_writes is True
-    assert dummy_app._python_tty.enabled is False
+    assert dummy_app._python_tty.enabled is True
     assert dummy_app._python_tty.allow_writes is True
 
     await dummy_app.action_toggle_remote_file_mode()
     await dummy_app.action_toggle_remote_exec()
 
     assert dummy_app._remote_file_write_enabled is False
-    assert dummy_app._remote_exec_enabled is True
+    assert dummy_app._remote_exec_enabled is False
     assert dummy_app._remote_files.allow_writes is False
-    assert dummy_app._python_tty.enabled is True
+    assert dummy_app._python_tty.enabled is False
     assert dummy_app._python_tty.allow_writes is False
 
 
@@ -5501,6 +5501,7 @@ async def test_remote_exec_toggle_warns_when_metadata_refresh_fails(
         "_show_notice",
         lambda message, *, error=False: notices.append((message, error)),
     )
+    dummy_app._set_remote_exec_enabled(False)
 
     await dummy_app.action_toggle_remote_exec()
 

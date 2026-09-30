@@ -8,8 +8,14 @@ import sys
 import types
 from pathlib import Path
 
-import numpy as np
 import pytest
+
+pytest.importorskip(
+    "numpy",
+    reason="Windows computer-use runtime installs numpy only on sys_platform == 'win32'",
+)
+
+import numpy as np  # noqa: E402
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
