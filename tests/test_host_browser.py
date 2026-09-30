@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+import asyncio
 import base64
 import os
 import sys
 from pathlib import Path
 from types import SimpleNamespace
+from unittest.mock import AsyncMock
 
 import pytest
 
@@ -39,6 +41,37 @@ from agent_zero_cli.host_browser import (
 
 
 pytestmark = pytest.mark.anyio
+
+
+@pytest.mark.parametrize("args", [{"expression": "document.title"}, {}, {"script": " "}, {"script": 42}])
+async def test_evaluate_rejects_missing_or_invalid_script(monkeypatch, args):
+    session = HostBrowserSession(context_id="ctx-evaluate", profile=None)
+    started = AsyncMock()
+    monkeypatch.setattr(session, "ensure_started", started)
+    with pytest.raises(ValueError, match="non-empty 'script'"):
+        await session.dispatch({"action": "evaluate", **args})
+    result = await session.dispatch({"action": "multi", "calls": [{"action": "evaluate", **args}]})
+    assert result == [{"ok": False, "error": "evaluate requires a non-empty 'script' string"}]
+    started.assert_not_awaited()
+
+
+@pytest.mark.parametrize("value", [None, False, 0, {"answer": 42}])
+async def test_evaluate_preserves_javascript_results(monkeypatch, value):
+    session = HostBrowserSession(context_id="ctx-evaluate", profile=None)
+    cdp = SimpleNamespace(send=AsyncMock(), detach=AsyncMock())
+    page = SimpleNamespace(
+        evaluate=AsyncMock(return_value=value), is_closed=lambda: False,
+        context=SimpleNamespace(new_cdp_session=AsyncMock(return_value=cdp)),
+    )
+    session.pages[3] = host_browser_session_module.HostBrowserPage(3, page)
+    monkeypatch.setattr(session, "ensure_started", AsyncMock())
+    monkeypatch.setattr(session, "_resolve_browser_id", lambda _: 3)
+    monkeypatch.setattr(session, "_page", lambda _: page)
+    monkeypatch.setattr(session, "_state", AsyncMock(return_value={"id": 3}))
+    script = "() => globalThis.probeValue"
+    result = await session.evaluate(3, script)
+    assert result == {"result": value, "state": {"id": 3}}
+    page.evaluate.assert_awaited_once_with(script)
 
 
 @pytest.fixture(autouse=True)
@@ -1706,7 +1739,7 @@ async def test_remote_debugging_session_opens_lists_and_reads_content(
                 target_id = str(params.get("targetId") or "")
                 self.closed_targets.append(target_id)
                 self.targets.pop(target_id, None)
-                return {}
+                return {"success": True}
             if method in {"Page.enable", "Runtime.enable", "Page.addScriptToEvaluateOnNewDocument"}:
                 return {}
             if method == "Page.navigate":

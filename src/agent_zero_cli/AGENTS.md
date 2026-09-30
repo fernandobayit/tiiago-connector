@@ -67,6 +67,9 @@
   offsets, while `EditableText.insert_text` receives the UTF-8 byte length of
   its string. Keep replacement and rollback calls aligned with that split.
 - Host-browser `open` must reuse an already-open tab with the same normalized URL before creating a new tab. Keep `list` and `set_active` workflows available for title-based or URL-based selection.
+- Host-browser `evaluate` requires a non-empty `script` string for single and multi calls, matching Core. Reject missing input before page execution; preserve legitimate JavaScript null/undefined results.
+- `evaluate_timeout_v1` advertises a host-enforced `evaluate_timeout_seconds` deadline (default 30; finite 0.1–60 seconds only) supplied by Core Browser settings. Playwright and direct CDP evaluate serialize per page and terminate execution in place. Keep the document when the original request settles within a 250 ms response grace; only unresolved execution (such as awaited promises) needs reload to commit. Report any reload or fallback closure in the timeout error. Preserve tab identity, cookies and storage; close only the affected page if recovery fails. Recovery, fallback closure and protocol detachment each have a 5-second bound. Safari evaluate fails before execution because its WebDriver backend cannot forcibly interrupt arbitrary JavaScript.
+- `HostBrowserManager` tracks active evaluate operations, including multi, by operation and context IDs. The internal `cancel_evaluate` operation must acknowledge only after browser recovery completes; reject cross-context or unknown targets. Disconnect cancels and drains evaluates before closing sessions. Core peers without deadline capability negotiation must never be told that a transport timeout proves execution stopped.
 - The allowlisted `open_remote_debugging` host-browser operation opens only an installed Chrome, Opera, or Edge executable at its fixed internal inspect page. It remains available while Host Browser is off so a deliberate Browser Settings action can complete setup, and it must never accept an arbitrary executable or URL.
 - Remote host-browser operations may report status while Host Browser is off, but `ensure` and every effectful action must fail closed. Local `/browser` commands and Launcher-authorized setup may still prepare the browser through the direct manager API.
 - Host-browser metadata must advertise stable browser choices, including discovered CDP browser IDs that survive `DevToolsActivePort` port/GUID changes. Incoming `browser_selection` / `host_browser_selection` values must select that browser instead of falling back to the automatic profile picker. Browser preparation may briefly wait for an existing browser's active-port file, and a failed discovered-CDP attach may retry only after that file advertises a different endpoint; explicit custom endpoints remain exact. Consent failures must tell the user to choose a Chrome profile and click Allow before retrying.
@@ -118,7 +121,9 @@
 - Remote workspace tools must respect their write/exec enablement flags and must not widen filesystem access accidentally.
 - Remote workspace `write` uses same-directory fsync plus atomic replacement so
   an interruption cannot truncate an existing host file or expose partial new
-  content.
+  content. Preserve an existing file's mode and, when running as root, UID/GID
+  before publication; metadata errors leave the original intact. New files
+  retain private temporary-file permissions and the executing user's ownership.
 - Remote workspace text reads must scan in fixed-size blocks, reject a
   binary-looking first block, and return no more than 2,000 lines or 256 KiB.
   Include explicit truncation/continuation metadata. Defensively reject write
@@ -128,6 +133,14 @@
   Spill larger cleaned output atomically into the selected host workspace,
   return a final-byte tail with an explicit notice plus size/hash/path metadata,
   and bound prompt-pattern inspection before running regexes on long lines.
+- Remote execution supports terminal/python/nodejs/output/reset, matching local
+  code execution. Core's `input_remote` forwards terminal code with the internal
+  `allow_running` flag; running sessions receive input, idle/missing sessions run
+  it as a command, matching local input. Write-access and enablement gates still
+  apply. The removed input runtime has no compatibility alias.
+- POSIX shell commands and completion bookkeeping form one parsed brace group,
+  so child stdin receives only subsequent input, while cwd and shell variables
+  remain available to the next command in the same session.
 - `file_browser.py` supplies binary-safe `files_*` operations for CLI and Launcher sessions. Advertise `file_browser: 1` and `root_path`; require the same root on each request. Host uploads use authenticated streamed HTTP with Core-supplied sizes and no independent ceiling, with size/hash checks and a same-directory staging file. Recheck connection identity, workspace and write permission before atomic publication; refuse overwrites and stale Editor revisions. Core enforces its configurable Editor text limit (10 MiB by default). No execution capability is required.
 - Host downloads use the same multipart streaming/integrity helper with an opaque `transfer_token`, targeting the protected File Browser receipt API instead of creating chat attachments. Both CLI and Launcher dispatch HTTP operations asynchronously through RemoteFileUtility; ordinary text-tool operations retain their own bounded protocol.
 - Textual compatibility guards live in `textual_compat.py`. Install them only on the interactive TUI startup path so `a0 headless` remains Textual-free.
