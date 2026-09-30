@@ -4729,6 +4729,7 @@ async def test_computer_use_slash_commands_refresh_hello_metadata_when_connected
     dummy_app.client.connected = True
     dummy_app.current_context = "ctx-remote"
     dummy_app.client.send_hello = fake_send_hello  # type: ignore[method-assign]
+    dummy_app._set_remote_exec_enabled(False)
 
     await dummy_app._dispatch_command("/computer-use on")
     await dummy_app._dispatch_command("/computer-use off")
@@ -5323,6 +5324,7 @@ async def test_remote_safety_toggles_refresh_hello_metadata_when_connected(
     dummy_app.client.connected = True
     dummy_app.current_context = "ctx-remote"
     dummy_app.client.send_hello = fake_send_hello  # type: ignore[method-assign]
+    dummy_app._set_remote_exec_enabled(False)
 
     await dummy_app.action_toggle_remote_file_mode()
     await dummy_app.action_toggle_remote_exec()
