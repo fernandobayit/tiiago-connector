@@ -260,6 +260,13 @@ PATCHES: list[tuple[str, str, str, int | None]] = [
         '        self._set_status("disabled", error="")',
         1,
     ),
+    # --- pyproject.toml: distribution identity --------------------------------
+    (
+        "src/agent_zero_cli/__init__.py",
+        '__version__ = "2.13"',
+        '__version__ = "2.13.1"',
+        1,
+    ),
     # --- docs/configuration.md: default column for the toggles ------------------
     (
         "docs/configuration.md",
@@ -267,6 +274,31 @@ PATCHES: list[tuple[str, str, str, int | None]] = [
         (
             "| `AGENT_ZERO_REMOTE_EXEC_ENABLED` / `A0_REMOTE_EXEC` | Start with host-side remote execution enabled | enabled |\n"
             "| `AGENT_ZERO_COMPUTER_USE_ENABLED` | Start with local Computer Use enabled (mode `allow`) | enabled |"
+        ),
+        1,
+    ),
+    # --- chat_log.py: TI•IA•GO intro banner -------------------------------------
+    (
+        "src/agent_zero_cli/widgets/chat_log.py",
+        (
+            '_AGENT_ZERO_BANNER = """ █████╗   ██████╗ ███████╗███╗   ██╗████████╗   ███████╗███████╗██████╗  ██████╗\n'
+            '██╔══██╗ ██╔════╝ ██╔════╝████╗  ██║╚══██╔══╝   ╚══███╔╝██╔════╝██╔══██╗██╔═══██╗\n'
+            '███████║ ██║  ███╗█████╗  ██╔██╗ ██║   ██║        ███╔╝ █████╗  ██████╔╝██║   ██║\n'
+            '██╔══██║ ██║   ██║██╔══╝  ██║╚██╗██║   ██║       ███╔╝  ██╔══╝  ██╔══██╗██║   ██║\n'
+            '██║  ██║ ╚██████╔╝███████╗██║ ╚████║   ██║      ███████╗███████╗██║  ██║╚██████╔╝\n'
+            '╚═╝  ╚═╝  ╚═════╝ ╚══════╝╚═╝  ╚═══╝   ╚═╝      ╚══════╝╚══════╝╚═╝  ╚═╝ ╚═════╝"""\n'
+            '_AGENT_ZERO_BANNER_COMPACT = "Agent Zero"\n'
+            '_AGENT_ZERO_BANNER_TINY = "A0"'
+        ),
+        (
+            '_AGENT_ZERO_BANNER = """████████╗  ██╗   ▄▄▄    ██╗  █████╗    ▄▄▄    ██████╗   ██████╗\n'
+            '╚══██╔══╝  ██║  ▐███▌   ██║ ██╔══██╗  ▐███▌  ██╔════╝  ██╔═══██╗\n'
+            '   ██║     ██║ ▐█████▌  ██║ ███████║ ▐█████▌ ██║  ███╗ ██║   ██║\n'
+            '   ██║     ██║  ▐███▌   ██║ ██╔══██║  ▐███▌  ██║   ██║ ██║   ██║\n'
+            '   ██║     ██║   ▀▀▀    ██║ ██║  ██║   ▀▀▀   ╚██████╔╝ ╚██████╔╝\n'
+            '   ╚═╝     ╚═╝          ╚═╝ ╚═╝  ╚═╝          ╚═════╝   ╚═════╝"""\n'
+            '_AGENT_ZERO_BANNER_COMPACT = "TI•IA•GO"\n'
+            '_AGENT_ZERO_BANNER_TINY = "TI"'
         ),
         1,
     ),
