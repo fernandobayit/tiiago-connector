@@ -425,8 +425,12 @@ class SplashLoginPanel(Vertical):
         self._render_target_context()
 
     def set_credentials(self, username: str = "", password: str = "", *, remember_host: bool = False) -> None:
-        self._username.value = username
-        self._password.value = password
+        # Never clobber a login field the user is editing: background state
+        # syncs must not erase typed credentials or move the caret.
+        if not self._username.has_focus and self._username.value != username:
+            self._username.value = username
+        if not self._password.has_focus and self._password.value != password:
+            self._password.value = password
         self._remember_host.value = remember_host
 
     def _safe_focus(self, widget: Input) -> None:
@@ -823,11 +827,28 @@ class SplashView(VerticalScroll):
         )
 
     def set_state(self, state: SplashState) -> None:
+        stage_changed = state.stage != self._state.stage
         self._state = state
         if self.is_mounted:
             self._sync_state()
-            if state.stage in {"host", "login", "error"}:
+            if state.stage in {"host", "login", "error"} and (
+                stage_changed or not self._splash_owns_focus()
+            ):
                 self.focus_primary()
+
+    def _splash_owns_focus(self) -> bool:
+        focused = getattr(self, "app", None)
+        focused = focused.focused if focused is not None else None
+        if focused is None or focused is self:
+            # No widget or only the splash container holds focus: re-apply the
+            # primary focus so a real input gets the keyboard.
+            return False
+        focused = focused.parent
+        while focused is not None:
+            if focused is self:
+                return True
+            focused = focused.parent
+        return False
 
     def set_stage(
         self,

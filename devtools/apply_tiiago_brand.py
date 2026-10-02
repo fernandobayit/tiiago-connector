@@ -263,8 +263,8 @@ PATCHES: list[tuple[str, str, str, int | None]] = [
     # --- pyproject.toml: distribution identity --------------------------------
     (
         "src/agent_zero_cli/__init__.py",
-        '__version__ = "2.13"',
         '__version__ = "2.13.1"',
+        '__version__ = "2.13.2"',
         1,
     ),
     # --- docs/configuration.md: default column for the toggles ------------------
@@ -299,6 +299,109 @@ PATCHES: list[tuple[str, str, str, int | None]] = [
             '   ╚═╝     ╚═╝          ╚═╝ ╚═╝  ╚═╝          ╚═════╝   ╚═════╝"""\n'
             '_AGENT_ZERO_BANNER_COMPACT = "TI•IA•GO"\n'
             '_AGENT_ZERO_BANNER_TINY = "TI"'
+        ),
+        1,
+    ),
+    # --- app.py: background discovery must not fight the login form ------------
+    (
+        "src/agent_zero_cli/app.py",
+        (
+            "        instances = tuple(result.instances)\n"
+            "        discovered_urls = {instance.url for instance in instances}\n"
+            "        preferred_host = (self._splash_state.host or self.config.instance_url or \"\").strip()"
+        ),
+        (
+            "        instances = tuple(result.instances)\n"
+            "        discovered_urls = {instance.url for instance in instances}\n"
+            "        if self._splash_state.stage != \"host\":\n"
+            "            # The host picker is not active (login/connecting/error/ready):\n"
+            "            # background discovery must not rewrite the splash while the user\n"
+            "            # types credentials, nor restart a connection in progress.\n"
+            "            return \"\"\n"
+            "        preferred_host = (self._splash_state.host or self.config.instance_url or \"\").strip()"
+        ),
+        1,
+    ),
+    (
+        "src/agent_zero_cli/app.py",
+        (
+            "        self._instance_discovery_generation += 1\n"
+            "        generation = self._instance_discovery_generation\n"
+            "        self._set_splash_state(\n"
+            "            discovery_status=\"loading\",\n"
+            "            discovery_detail=\"\",\n"
+            "        )\n"
+            "        self.run_worker("
+        ),
+        (
+            "        self._instance_discovery_generation += 1\n"
+            "        generation = self._instance_discovery_generation\n"
+            "        # Discovery state belongs to the host picker. Do not rewrite the splash\n"
+            "        # while the user is already typing credentials on the login stage.\n"
+            "        if self._splash_state.stage == \"host\":\n"
+            "            self._set_splash_state(\n"
+            "                discovery_status=\"loading\",\n"
+            "                discovery_detail=\"\",\n"
+            "            )\n"
+            "        self.run_worker("
+        ),
+        1,
+    ),
+    # --- widgets/splash_view.py: never clobber login typing ---------------------
+    (
+        "src/agent_zero_cli/widgets/splash_view.py",
+        (
+            "    def set_credentials(self, username: str = \"\", password: str = \"\", *, remember_host: bool = False) -> None:\n"
+            "        self._username.value = username\n"
+            "        self._password.value = password\n"
+            "        self._remember_host.value = remember_host"
+        ),
+        (
+            "    def set_credentials(self, username: str = \"\", password: str = \"\", *, remember_host: bool = False) -> None:\n"
+            "        # Never clobber a login field the user is editing: background state\n"
+            "        # syncs must not erase typed credentials or move the caret.\n"
+            "        if not self._username.has_focus and self._username.value != username:\n"
+            "            self._username.value = username\n"
+            "        if not self._password.has_focus and self._password.value != password:\n"
+            "            self._password.value = password\n"
+            "        self._remember_host.value = remember_host"
+        ),
+        1,
+    ),
+    (
+        "src/agent_zero_cli/widgets/splash_view.py",
+        (
+            "    def set_state(self, state: SplashState) -> None:\n"
+            "        self._state = state\n"
+            "        if self.is_mounted:\n"
+            "            self._sync_state()\n"
+            "            if state.stage in {\"host\", \"login\", \"error\"}:\n"
+            "                self.focus_primary()"
+        ),
+        (
+            "    def set_state(self, state: SplashState) -> None:\n"
+            "        stage_changed = state.stage != self._state.stage\n"
+            "        self._state = state\n"
+            "        if self.is_mounted:\n"
+            "            self._sync_state()\n"
+            "            if state.stage in {\"host\", \"login\", \"error\"} and (\n"
+            "                stage_changed or not self._splash_owns_focus()\n"
+            "            ):\n"
+            "                self.focus_primary()\n"
+            "\n"
+            "    def _splash_owns_focus(self) -> bool:\n"
+            "        focused = getattr(self, \"app\", None)\n"
+            "        focused = focused.focused if focused is not None else None\n"
+            "        if focused is None or focused is self:\n"
+            "            # No widget or only the splash container holds focus: re-apply the\n"
+            "            # primary focus so a real input gets the keyboard.\n"
+            "            return False\n"
+            "        focused = focused.parent\n"
+            "        while focused is not None:\n"
+            "            if focused is self:\n"
+            "                return True\n"
+            "            focused = focused.parent\n"
+            "        return False"
         ),
         1,
     ),

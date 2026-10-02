@@ -130,3 +130,65 @@ def test_error_back_button_requests_navigation_to_host() -> None:
     assert len(messages) == 1
     assert isinstance(messages[0], SplashView.ActionRequested)
     assert messages[0].action == "back"
+
+
+@pytest.mark.anyio
+async def test_background_state_sync_keeps_login_typing_and_focus() -> None:
+    app = SplashViewHarness()
+
+    async with app.run_test(size=(100, 30)) as pilot:
+        view = app.query_one(SplashView)
+        view.set_state(SplashState(stage="login", host="https://a0.example.me"))
+        await pilot.pause()
+
+        username = view.query_one("#splash-login-username")
+        username.focus()
+        await pilot.pause()
+        await pilot.press("f", "e", "r")
+
+        # Background discovery replay reproduces the pre-fix focus ping-pong:
+        # it rewrote credentials and re-focused a different login field.
+        view.set_state(SplashState(stage="login", host="https://a0.example.me"))
+        await pilot.pause()
+
+        assert username.value == "fer"
+        assert app.focused is username
+
+
+@pytest.mark.anyio
+async def test_same_stage_state_sync_does_not_move_login_focus() -> None:
+    app = SplashViewHarness()
+
+    async with app.run_test(size=(100, 30)) as pilot:
+        view = app.query_one(SplashView)
+        view.set_state(SplashState(stage="login", host="https://a0.example.me"))
+        await pilot.pause()
+
+        username = view.query_one("#splash-login-username")
+        username.focus()
+        await pilot.pause()
+
+        view.set_state(
+            SplashState(stage="login", host="https://a0.example.me", discovery_status="loading")
+        )
+        await pilot.pause()
+
+        assert app.focused is username
+
+
+@pytest.mark.anyio
+async def test_stage_change_still_refocuses_login_panel() -> None:
+    app = SplashViewHarness()
+
+    async with app.run_test(size=(100, 30)) as pilot:
+        view = app.query_one(SplashView)
+        view.set_state(SplashState(stage="connecting", host="https://a0.example.me"))
+        await pilot.pause()
+
+        view.set_state(SplashState(stage="login", host="https://a0.example.me"))
+        await pilot.pause()
+
+        assert view._state.stage == "login"
+        focused = app.focused
+        assert focused is not None
+        assert focused.id in {"splash-login-username", "splash-login-password"}

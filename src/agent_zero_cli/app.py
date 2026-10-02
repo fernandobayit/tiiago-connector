@@ -1514,10 +1514,13 @@ class AgentZeroCLI(App):
 
         self._instance_discovery_generation += 1
         generation = self._instance_discovery_generation
-        self._set_splash_state(
-            discovery_status="loading",
-            discovery_detail="",
-        )
+        # Discovery state belongs to the host picker. Do not rewrite the splash
+        # while the user is already typing credentials on the login stage.
+        if self._splash_state.stage == "host":
+            self._set_splash_state(
+                discovery_status="loading",
+                discovery_detail="",
+            )
         self.run_worker(
             self._discover_local_instances(generation, auto_connect_single=auto_connect_single),
             exclusive=False,
@@ -1543,6 +1546,11 @@ class AgentZeroCLI(App):
     ) -> str:
         instances = tuple(result.instances)
         discovered_urls = {instance.url for instance in instances}
+        if self._splash_state.stage != "host":
+            # The host picker is not active (login/connecting/error/ready):
+            # background discovery must not rewrite the splash while the user
+            # types credentials, nor restart a connection in progress.
+            return ""
         preferred_host = (self._splash_state.host or self.config.instance_url or "").strip()
         selected_host_url = self._splash_state.selected_host_url.strip()
 

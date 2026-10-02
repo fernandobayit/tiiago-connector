@@ -1251,6 +1251,26 @@ async def test_remote_exec_toggle_off_closes_existing_sessions(
     assert fake_tty.close_calls == 1
 
 
+def test_apply_instance_discovery_result_ignores_background_result_on_login_stage(
+    dummy_app: DummyAgentZeroCLI,
+) -> None:
+    dummy_app._set_splash_state(stage="login", host=DEFAULT_HOST)
+
+    target = dummy_app._apply_instance_discovery_result(
+        DiscoveryResult(
+            status="ready",
+            instances=(_instance("http://localhost:50001"),),
+        ),
+        auto_connect_single=True,
+    )
+
+    splash = dummy_app._test_widgets["#splash-view"]  # type: ignore[index]
+    assert target == ""
+    assert splash.state.stage == "login"
+    assert splash.state.discovered_instances == ()
+    assert splash.state.host == DEFAULT_HOST
+
+
 def test_apply_instance_discovery_result_autoconnects_single_instance(
     dummy_app: DummyAgentZeroCLI,
 ) -> None:
