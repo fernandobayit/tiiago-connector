@@ -727,6 +727,12 @@ class SplashView(VerticalScroll):
             super().__init__()
             self.remember_host = remember_host
 
+    class LoginFieldsChanged(Message):
+        def __init__(self, *, username: str, password: str) -> None:
+            super().__init__()
+            self.username = username
+            self.password = password
+
     def __init__(self) -> None:
         super().__init__(id="splash-view")
         self._hero = build_agent_zero_banner_widget(id="splash-hero")
@@ -967,6 +973,14 @@ class SplashView(VerticalScroll):
             if self._is_login_state_sync_event(event):
                 return
             self._login_panel.clear_error()
+            # Propagate typed credentials so background state syncs cannot
+            # clear the field the user just left.
+            self.post_message(
+                self.LoginFieldsChanged(
+                    username=self._login_panel.username,
+                    password=self._login_panel.password,
+                )
+            )
 
     def on_checkbox_changed(self, event: Checkbox.Changed) -> None:
         checkbox_id = event.checkbox.id or ""

@@ -2519,6 +2519,11 @@ class AgentZeroCLI(App):
             return
         self._set_splash_state(remember_host=event.remember_host)
 
+    def on_splash_view_login_fields_changed(self, event: SplashView.LoginFieldsChanged) -> None:
+        if self._splash_state.username == event.username and self._splash_state.password == event.password:
+            return
+        self._set_splash_state(username=event.username, password=event.password)
+
     async def on_splash_view_action_requested(self, event: SplashView.ActionRequested) -> None:
         if event.action == "back":
             await connection._cancel_websocket_recovery(self)

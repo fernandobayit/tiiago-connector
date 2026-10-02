@@ -16,8 +16,17 @@ from agent_zero_cli.widgets.splash_view import (
 
 
 class SplashViewHarness(App[None]):
+    def __init__(self) -> None:
+        super().__init__()
+        self.latest_login_username = ""
+        self.latest_login_password = ""
+
     def compose(self) -> ComposeResult:
         yield SplashView()
+
+    def on_splash_view_login_fields_changed(self, event: SplashView.LoginFieldsChanged) -> None:
+        self.latest_login_username = event.username
+        self.latest_login_password = event.password
 
 
 @pytest.mark.parametrize(
@@ -192,3 +201,41 @@ async def test_stage_change_still_refocuses_login_panel() -> None:
         focused = app.focused
         assert focused is not None
         assert focused.id in {"splash-login-username", "splash-login-password"}
+
+
+@pytest.mark.anyio
+async def test_field_switch_with_background_state_sync_keeps_typed_other_field() -> None:
+    app = SplashViewHarness()
+
+    async with app.run_test(size=(100, 30)) as pilot:
+        view = app.query_one(SplashView)
+        view.set_state(SplashState(stage="login", host="https://a0.example.me"))
+        await pilot.pause()
+
+        username = view.query_one("#splash-login-username")
+        username.focus()
+        await pilot.pause()
+        await pilot.press("f", "e", "r")
+        await pilot.pause()
+        assert app.latest_login_username == "fer"
+
+        password = view.query_one("#splash-login-password")
+        password.focus()
+        await pilot.pause()
+        await pilot.press("9")
+        await pilot.pause()
+
+        # A background state sync replays while the password field holds focus;
+        # it must not clear the username the user already typed.
+        view.set_state(
+            SplashState(
+                stage="login",
+                host="https://a0.example.me",
+                username=app.latest_login_username,
+                password=app.latest_login_password,
+            )
+        )
+        await pilot.pause()
+
+        assert username.value == "fer"
+        assert password.value == "9"

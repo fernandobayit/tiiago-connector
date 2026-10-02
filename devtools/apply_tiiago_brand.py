@@ -263,8 +263,8 @@ PATCHES: list[tuple[str, str, str, int | None]] = [
     # --- pyproject.toml: distribution identity --------------------------------
     (
         "src/agent_zero_cli/__init__.py",
-        '__version__ = "2.13.1"',
         '__version__ = "2.13.2"',
+        '__version__ = "2.13.3"',
         1,
     ),
     # --- docs/configuration.md: default column for the toggles ------------------
@@ -402,6 +402,72 @@ PATCHES: list[tuple[str, str, str, int | None]] = [
             "                return True\n"
             "            focused = focused.parent\n"
             "        return False"
+        ),
+        1,
+    ),
+    # --- widgets/splash_view.py: propagate typed login fields -------------------
+    (
+        "src/agent_zero_cli/widgets/splash_view.py",
+        (
+            "            if self._is_login_state_sync_event(event):\n"
+            "                return\n"
+            "            self._login_panel.clear_error()"
+        ),
+        (
+            "            if self._is_login_state_sync_event(event):\n"
+            "                return\n"
+            "            self._login_panel.clear_error()\n"
+            "            # Propagate typed credentials so background state syncs cannot\n"
+            "            # clear the field the user just left.\n"
+            "            self.post_message(\n"
+            "                self.LoginFieldsChanged(\n"
+            "                    username=self._login_panel.username,\n"
+            "                    password=self._login_panel.password,\n"
+            "                )\n"
+            "            )"
+        ),
+        1,
+    ),
+    (
+        "src/agent_zero_cli/widgets/splash_view.py",
+        (
+            "    class RememberHostChanged(Message):\n"
+            "        def __init__(self, *, remember_host: bool) -> None:\n"
+            "            super().__init__()\n"
+            "            self.remember_host = remember_host"
+        ),
+        (
+            "    class RememberHostChanged(Message):\n"
+            "        def __init__(self, *, remember_host: bool) -> None:\n"
+            "            super().__init__()\n"
+            "            self.remember_host = remember_host\n"
+            "\n"
+            "    class LoginFieldsChanged(Message):\n"
+            "        def __init__(self, *, username: str, password: str) -> None:\n"
+            "            super().__init__()\n"
+            "            self.username = username\n"
+            "            self.password = password"
+        ),
+        1,
+    ),
+    (
+        "src/agent_zero_cli/app.py",
+        (
+            "    def on_splash_view_remember_host_changed(self, event: SplashView.RememberHostChanged) -> None:\n"
+            "        if self._splash_state.remember_host == event.remember_host:\n"
+            "            return\n"
+            "        self._set_splash_state(remember_host=event.remember_host)"
+        ),
+        (
+            "    def on_splash_view_remember_host_changed(self, event: SplashView.RememberHostChanged) -> None:\n"
+            "        if self._splash_state.remember_host == event.remember_host:\n"
+            "            return\n"
+            "        self._set_splash_state(remember_host=event.remember_host)\n"
+            "\n"
+            "    def on_splash_view_login_fields_changed(self, event: SplashView.LoginFieldsChanged) -> None:\n"
+            "        if self._splash_state.username == event.username and self._splash_state.password == event.password:\n"
+            "            return\n"
+            "        self._set_splash_state(username=event.username, password=event.password)"
         ),
         1,
     ),
